@@ -1,0 +1,21 @@
+# === Datavora API (Cloudflare Workers + R2 + D1) ===
+# Ganti nilai GANTI_* sebelum deploy. Lihat README bagian Deploy.
+
+name = "datavora-api"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+# Batas upload praktis: file individual di-buffer di memori Worker (maks ~128 MB).
+# Foto/dokumen aman. Video raksasa (>~100 MB per file) sebaiknya dipecah/diunggah dari lokal.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "datavora"
+database_id = "GANTI-D1-DATABASE-ID"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "datavora-files"
+
+[vars]
+# FRONTEND_URL = "https://files.domainanda.com"

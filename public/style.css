@@ -1,0 +1,251 @@
+/* ===== Datavora Elegant — gelap / terang ===== */
+:root{
+  --bg:#f4f5fa; --card:#ffffff; --card2:#eef0f7;
+  --text:#1a2340; --muted:#7c86a2; --border:#e6e8f2;
+  --input:#ffffff;
+  --accent:#4f46e5; --accent2:#4f46e5;
+  --gradient:#4f46e5;
+  --green:#16a34a; --red:#dc2626; --amber:#b45309;
+  --shadow:0 1px 2px rgba(26,35,64,.05),0 8px 24px -12px rgba(26,35,64,.18);
+  --radius:14px;
+}
+[data-theme="dark"]{
+  --bg:#0a0f1e; --card:#121a30; --card2:#0d1428;
+  --text:#e8ecf7; --muted:#8b94b3; --border:rgba(139,148,179,.16);
+  --input:#0d1428;
+  --accent:#818cf8; --accent2:#818cf8;
+  --gradient:#818cf8;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -12px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.55;transition:background .25s,color .25s}
+button{font-family:inherit}
+::selection{background:rgba(139,92,246,.3)}
+
+/* ----- Auth ----- */
+.auth-wrap{display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;background:#0a0f1e}
+.auth-card{background:#121a30;color:#e8ecf7;padding:36px;border-radius:20px;width:100%;max-width:400px;border:1px solid rgba(139,148,179,.16);box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.auth-card h1{text-align:center;font-size:30px;letter-spacing:.5px}
+.auth-card h1 .grad{color:#fff}
+.subtitle{text-align:center;color:#8b94b3;font-size:13px;margin:10px 0 22px;letter-spacing:.2px}
+.tabs{display:flex;gap:8px;margin-bottom:18px;background:#0d1428;padding:5px;border-radius:12px}
+.tabs button{flex:1;padding:9px;border:none;border-radius:9px;background:transparent;color:#8b94b3;cursor:pointer;font-weight:600;font-size:13px}
+.tabs button.active{background:var(--gradient);color:#fff}
+.auth-card input{width:100%;padding:12px 14px;margin-bottom:10px;border-radius:10px;border:1px solid rgba(139,148,179,.2);background:#0d1428;color:#fff;font-size:14px}
+.auth-card input:focus{outline:none;border-color:#7c7cf4}
+.auth-card button{width:100%;padding:12px;border:none;border-radius:10px;background:var(--gradient);color:#fff;font-weight:700;cursor:pointer;font-size:14px}
+.msg{min-height:20px;font-size:13px;margin-top:10px;text-align:center;color:#fbbf24}
+.hint{font-size:12px;color:#8b94b3;margin-top:14px;text-align:center}
+.pw-wrap{position:relative;margin-bottom:10px}
+.pw-wrap input{margin-bottom:0;padding-right:44px}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:auto !important;padding:6px 10px !important;background:transparent !important;font-size:15px;cursor:pointer;box-shadow:none !important;display:inline-flex}
+.pw-toggle .ic{width:16px;height:16px;color:#8b94b3}
+.sel-del{display:inline-flex;align-items:center;gap:7px}
+.sel-del .ic{width:15px;height:15px}
+
+/* ----- Header ----- */
+header{display:flex;justify-content:space-between;align-items:center;padding:10px 22px;background:var(--card);background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px;font-size:16px;letter-spacing:.3px}
+.logo{width:32px;height:32px;border-radius:9px;background:var(--gradient);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+#helloUser{color:var(--muted);font-size:12.5px;font-weight:400}
+.head-right{display:flex;gap:8px;align-items:center}
+.theme-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:15px;border-radius:10px;padding:7px 12px;cursor:pointer}
+.theme-btn:hover{border-color:var(--accent)}
+.logout{background:transparent;border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13px}
+.logout:hover{border-color:var(--red);color:var(--red)}
+
+/* ----- Layout ----- */
+.layout{display:flex;max-width:1120px;margin:0 auto;align-items:flex-start;gap:4px}
+.container{flex:1;min-width:0;max-width:780px;margin:0 auto;padding:22px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+
+/* ----- Sidebar sematan ----- */
+#sidebar{width:272px;flex-shrink:0;padding:22px 0 22px 22px;position:sticky;top:62px}
+#sidebar h3{margin-bottom:4px;font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted)}
+#sidebar h3.side-sec{margin-top:20px}
+.trash-item{opacity:.92}
+.trash-item .actions .icon-btn{width:30px;height:30px;font-size:13px}
+.empty-trash{width:100%;margin-top:4px;padding:9px;border:1px solid var(--red);background:transparent;color:var(--red);border-radius:9px;cursor:pointer;font-weight:700;font-size:12px}
+.empty-trash:hover{background:var(--red);color:#fff}
+.trash-nav{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;font-weight:700;font-size:13px}
+.trash-nav:hover{border-color:var(--red);color:var(--red)}
+.container.trash-mode #folderList,.container.trash-mode #folderSecLabel,.container.trash-mode #fileSecLabel{display:none}
+.trash-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-weight:700;font-size:14px}
+.trash-head .empty-trash{width:auto;margin:0}
+.side-hint{font-size:12px;color:var(--muted);margin-bottom:12px}
+.pin-item{background:var(--card);border:1px solid var(--border);padding:11px 13px;border-radius:12px;margin-bottom:8px;box-shadow:var(--shadow)}
+.pin-item .name{font-weight:600;font-size:13px;word-break:break-all;margin-bottom:2px}
+.pin-item .meta{font-size:11px;color:var(--muted);margin-bottom:9px}
+.pin-item .actions{display:flex;gap:6px;flex-wrap:wrap}
+.side-empty{font-size:12px;color:var(--muted);background:var(--card);border:1px dashed var(--border);padding:14px;border-radius:12px;line-height:1.6}
+
+/* ----- Tombol ikon ghost ----- */
+.icon-btn{width:33px;height:33px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border);background:transparent;border-radius:9px;cursor:pointer;font-size:14px;color:var(--muted);transition:background .15s,color .15s,border-color .15s}
+.icon-btn:hover{color:#fff;border-color:transparent}
+.btn-view:hover{background:#7c3aed}
+.btn-open:hover{background:#0284c7}
+.btn-dl:hover{background:#16a34a}
+.btn-pin:hover{background:#b45309}
+.btn-pin.is-on{background:rgba(180,83,9,.14);border-color:transparent;color:#d97706}
+.btn-ren:hover{background:#64748b}
+.btn-del:hover{background:#dc2626}
+
+/* ----- Ikon SVG ----- */
+.ic{width:18px;height:18px;flex-shrink:0}
+.icon-btn .ic{width:17px;height:17px}
+.menu button .ic{width:16px;height:16px}
+.menu button span{flex:1}
+.ficon .ic{width:26px;height:26px;color:var(--amber)}
+.file-item .name .ic,.pin-item .name .ic{width:13px;height:13px;color:var(--muted);vertical-align:-1px}
+.folder-item .name .ic{width:14px;height:14px;color:var(--amber);vertical-align:-1px}
+.breadcrumb button .ic{width:14px;height:14px;vertical-align:-2px}
+.theme-btn .ic,.logout .ic,#backBtn .ic,.trash-nav .ic{width:15px;height:15px;vertical-align:-2px}
+.head-right .logout,.trash-nav,#backBtn{display:inline-flex;align-items:center;gap:7px}
+.modal-head .ic{width:16px;height:16px;vertical-align:-2px}
+
+/* ----- Menu titik tiga ----- */
+.menu-wrap{position:relative}
+.menu-btn{font-size:16px}
+button.btn.menu-btn{font-size:13.5px;letter-spacing:0}
+.menu{position:absolute;right:0;top:40px;min-width:208px;background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.18);padding:6px;display:none;z-index:40}
+.menu.open{display:block}
+.menu button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border:none;background:transparent;color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;text-align:left}
+.menu button:hover{background:var(--card2)}
+.menu button.danger{color:var(--red)}
+.menu button.danger:hover{background:rgba(220,38,38,.1)}
+.menu .mdiv{height:1px;background:var(--border);margin:5px 8px}
+.menu select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--input);color:var(--muted);font-size:12px;cursor:pointer}
+
+/* ----- Kuota ----- */
+.quota-top{display:flex;justify-content:space-between;font-weight:600;margin-bottom:10px;font-size:13.5px}
+.bar{background:var(--card2);border:1px solid var(--border);border-radius:99px;height:12px;overflow:hidden}
+.bar div{height:100%;background:var(--gradient);width:0%;transition:width .4s}
+.quota-card small{color:var(--muted);font-size:12px}
+
+/* ----- Upload & buat file ----- */
+.upload-card{text-align:center;border-style:dashed;border-width:1.5px}
+.upload-card.dragover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--card))}
+.upload-card p{font-size:14px}
+.upload-card .row{display:flex;gap:8px;justify-content:center;margin:12px 0 4px;flex-wrap:wrap}
+.btn{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:10px;cursor:pointer;font-weight:600;font-size:13.5px;transition:all .15s}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--gradient);border:none;color:#fff}
+.btn.primary:hover{filter:brightness(.93)}
+.upload-card small{display:block;color:var(--muted);margin-top:8px;font-size:12px}
+.upload-target{font-size:12.5px;color:var(--green);margin-top:8px;font-weight:600}
+#uploadStatus,#createStatus{font-size:13px;color:var(--accent);margin-top:8px}
+.create-card p{font-size:14px;margin-bottom:10px}
+.create-card input,.create-card textarea{width:100%;padding:10px 12px;margin-bottom:10px;border-radius:10px;border:1px solid var(--border);background:var(--input);color:var(--text);resize:vertical;font-size:13.5px}
+.create-card input:focus,.create-card textarea:focus{outline:none;border-color:var(--accent)}
+.secure{color:var(--green);font-size:11.5px;font-weight:600}
+
+/* ----- Breadcrumb & folder ----- */
+.breadcrumb{display:flex;gap:2px;align-items:center;flex-wrap:wrap;background:transparent;border:none;box-shadow:none;padding:6px 2px}
+.breadcrumb button{background:transparent;border:none;color:var(--muted);border-radius:8px;padding:5px 8px;cursor:pointer;font-size:13.5px;font-weight:500}
+.breadcrumb button:hover{color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.breadcrumb button.current{background:none;color:var(--accent);font-weight:700}
+.breadcrumb .sep{color:var(--muted);font-size:12px;opacity:.6}
+.nav-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.nav-row .breadcrumb{flex:1;margin-bottom:0}
+.nav-row .btn{white-space:nowrap}
+.folder-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.folder-bar small{color:var(--muted);font-size:12px}
+.folder-new{padding:9px 16px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font-weight:600;cursor:pointer;font-size:13px}
+.folder-new:hover{border-color:var(--amber);color:var(--amber)}
+.folder-add{padding:9px 16px;border:none;border-radius:10px;background:var(--gradient);color:#fff;font-weight:700;cursor:pointer;font-size:13px}
+.folder-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+/* ----- Label seksi & pembeda folder vs file ----- */
+.sec-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);margin:4px 2px 8px}
+.link-btn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:12px;font-weight:700;text-transform:none;letter-spacing:0}
+.link-btn:hover{text-decoration:underline}
+.danger-link{color:var(--red)}
+.folder-item{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--amber);padding:11px 15px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.folder-item .ficon{font-size:22px}
+.file-item{border-left:4px solid var(--accent)}
+.folder-item:hover{border-color:var(--accent)}
+.folder-item.folder-drop{border-color:var(--green);background:color-mix(in srgb,var(--green) 9%,var(--card))}
+.folder-item .finfo{flex:1;min-width:0;cursor:pointer}
+.folder-item .name{font-weight:600;font-size:14px}
+.folder-item .meta{font-size:11px;color:var(--muted);margin-top:1px}
+.folder-item .actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap}
+.f-open{background:var(--accent)} .f-add{background:var(--green)}
+.f-dl{background:#0e7490} .f-ren{background:var(--muted)} .f-del{background:var(--red)}
+
+/* ----- Toolbar & daftar file ----- */
+.toolbar{display:flex;gap:10px;align-items:center;margin:2px 0 10px}
+.toolbar input{flex:1;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13.5px}
+.toolbar input:focus{outline:none;border-color:var(--accent)}
+.toolbar span{font-size:12px;color:var(--muted);white-space:nowrap}
+.zip-btn{width:100%;padding:12px;margin-bottom:12px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:var(--text);font-weight:600;cursor:pointer;font-size:13.5px;transition:all .15s}
+.zip-btn:hover{border-color:#7c3aed;color:#7c3aed}
+.file-list{display:flex;flex-direction:column;gap:9px;position:relative}
+.file-list .marquee{position:absolute;border:1.5px dashed var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);border-radius:6px;z-index:5;pointer-events:none;display:none}
+body.marqueeing{user-select:none}
+body.marqueeing .file-item{cursor:default}
+.file-item{background:var(--card);border:1px solid var(--border);padding:12px 15px;border-radius:12px;display:flex;gap:13px;align-items:center;box-shadow:var(--shadow);transition:border-color .15s}
+.file-item:hover{border-color:color-mix(in srgb,var(--accent) 45%,var(--border))}
+.file-item .thumb{width:48px;height:48px;object-fit:cover;border-radius:11px;flex-shrink:0;cursor:pointer;background:var(--card2);border:1px solid var(--border)}
+.file-item .info{flex:1;min-width:0}
+.file-item .name{font-weight:600;font-size:13.5px;word-break:break-all}
+.file-item .meta{font-size:11.5px;color:var(--muted);margin-top:2px}
+.file-item .actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.file-item .move{font-size:12px;padding:7px 8px;border-radius:9px;background:var(--input);color:var(--muted);border:1px solid var(--border);max-width:124px;cursor:pointer}
+.file-item .pick{width:17px;height:17px;accent-color:var(--red);cursor:pointer;flex-shrink:0}
+.sel-bar{display:flex;gap:8px;align-items:center;background:var(--card);border:1px solid var(--red);border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:13px;font-weight:600}
+.sel-bar .sel-del{background:var(--red);border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+.sel-bar .sel-cancel{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 14px;border-radius:8px;cursor:pointer}
+.empty{text-align:center;color:var(--muted);padding:36px;background:var(--card);border:1px dashed var(--border);border-radius:12px;font-size:13.5px}
+
+/* ----- Overlay drop di mana saja ----- */
+#dropOverlay{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;pointer-events:none;background:color-mix(in srgb,var(--accent) 10%,transparent);backdrop-filter:blur(2px)}
+#dropOverlay.show{display:flex}
+#dropOverlay div{border:2.5px dashed var(--accent);border-radius:20px;padding:40px 56px;text-align:center;font-size:19px;background:var(--card);box-shadow:var(--shadow)}
+#dropOverlay strong{color:var(--accent)}
+
+/* ----- Modal ----- */
+.modal{position:fixed;inset:0;background:rgba(5,8,18,.62);backdrop-filter:blur(3px);display:flex;justify-content:center;align-items:center;z-index:50;padding:16px}
+.modal-card{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:18px;width:100%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px}
+.modal-head strong{word-break:break-all;font-size:15px}
+.modal-x{background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:9px;padding:6px 12px;cursor:pointer;flex-shrink:0}
+.modal-x:hover{color:var(--text)}
+.modal-card textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--input);color:var(--text);resize:vertical;font-family:Consolas,monospace;font-size:13px}
+.modal-card input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input);color:var(--text);font-size:13.5px;margin-bottom:10px}
+.modal-status{font-size:13px;color:var(--accent);min-height:20px;margin:6px 0}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap}
+.modal-actions button{padding:10px 16px;background:var(--card2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-weight:600;color:var(--text);font-size:13px;display:inline-flex;align-items:center;gap:7px}
+.modal-actions button .ic{width:15px;height:15px}
+.modal-actions .primary{background:var(--gradient)}
+.preview-body{display:flex;justify-content:center;align-items:center;min-height:200px;max-height:60vh;overflow:auto;background:var(--card2);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;color:var(--muted)}
+.preview-body img{max-width:100%;max-height:60vh;object-fit:contain}
+.preview-body video{max-width:100%;max-height:60vh}
+.preview-body audio{width:100%}
+.preview-body iframe{width:100%;height:60vh;border:none}
+
+/* ----- Transisi elegan: fade lembut saja, tanpa gerakan ----- */
+@keyframes viewIn{from{opacity:.2}to{opacity:1}}
+@keyframes itemIn{from{opacity:.3}to{opacity:1}}
+.container.view-enter{animation:viewIn .35s ease}
+.file-item,.folder-item,.pin-item{animation:itemIn .3s ease}
+.modal-card{animation:itemIn .25s ease}
+.menu.open{animation:itemIn .18s ease}
+#dropOverlay.show div{animation:itemIn .25s ease}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+
+/* ----- Footer ----- */
+footer{border-top:1px solid var(--border);margin-top:26px;padding:18px 20px 22px}
+.foot-inner{max-width:1120px;margin:0 auto;display:flex;gap:8px 22px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.foot-brand{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px}
+.logo.sm{width:24px;height:24px;font-size:12px;border-radius:7px}
+.foot-note{font-size:12px;color:var(--muted)}
+.foot-copy{font-size:12px;color:var(--muted)}
+
+/* ----- Responsif ----- */@media (max-width:820px){
+  .layout{flex-direction:column}
+  #sidebar{width:100%;position:static;padding:20px 20px 0}
+  .file-item{flex-wrap:wrap}
+  .file-item .actions{justify-content:flex-start}
+  .container{padding:16px}
+}
