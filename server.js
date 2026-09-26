@@ -295,6 +295,7 @@ app.post('/api/upload', authMiddleware, upload.array('files', 20), async (req, r
   const allFiles = readJson(FILES_FILE, []);
   const saved = [];
   let rejected = 0;
+  let quotaRejected = 0;
 
   // Target folder upload (dari folder yang sedang dibuka)
   let folderId = null;
@@ -307,8 +308,9 @@ app.post('/api/upload', authMiddleware, upload.array('files', 20), async (req, r
 
   for (const f of req.files) {
     if (used + f.size > quota) {
-      fs.unlinkSync(f.path); // tolak file yang melebihi kuota
+      fs.unlinkSync(f.path); // tolak file yang melebihi kuota 10 GB
       rejected++;
+      quotaRejected++;
       continue;
     }
     try {
@@ -335,6 +337,8 @@ app.post('/api/upload', authMiddleware, upload.array('files', 20), async (req, r
     }
   }
   writeJson(FILES_FILE, allFiles);
+  if (!saved.length && quotaRejected > 0)
+    return res.status(400).json({ message: '⛔ Penyimpanan penuh (10 GB). Hapus file atau kosongkan sampah untuk menambah data.', files: saved, rejected });
   res.json({ message: `${saved.length} file berhasil diupload (tersimpan terenkripsi)`, files: saved, rejected });
 });
 

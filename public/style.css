@@ -120,6 +120,7 @@ button.btn.menu-btn{font-size:13.5px;letter-spacing:0}
 .quota-top{display:flex;justify-content:space-between;font-weight:600;margin-bottom:10px;font-size:13.5px}
 .bar{background:var(--card2);border:1px solid var(--border);border-radius:99px;height:12px;overflow:hidden}
 .bar div{height:100%;background:var(--gradient);width:0%;transition:width .4s}
+.bar div.full{background:var(--red)}
 .quota-card small{color:var(--muted);font-size:12px}
 
 /* ----- Upload & buat file ----- */

@@ -99,7 +99,14 @@ async function register() {
   });
   const d = await r.json();
   showAuth(d.message);
-  if (r.ok) switchTab('login');
+  if (r.ok) {
+    // Kosongkan form agar username/password tidak muncul lagi saat buka Daftar
+    document.getElementById('regUser').value = '';
+    document.getElementById('regPass').value = '';
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    switchTab('login');
+  }
 }
 
 async function login() {
@@ -114,6 +121,10 @@ async function login() {
   token = d.token; username = d.username;
   sessionStorage.setItem('datavora_token', token);
   sessionStorage.setItem('datavora_user', username);
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('regUser').value = '';
+  document.getElementById('regPass').value = '';
   enterApp();
 }
 
@@ -123,6 +134,9 @@ function logout() {
   });
   token = ''; username = '';
   clearTimeout(idleTimer);
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  showAuth('');
   document.getElementById('appPage').style.display = 'none';
   document.getElementById('authPage').style.display = 'flex';
 }
@@ -150,8 +164,12 @@ async function loadQuota() {
   if (r.status === 401) return logout();
   const d = await r.json();
   document.getElementById('quotaText').textContent = `${fmt(d.used)} / ${fmt(d.quota)}`;
-  document.getElementById('quotaBar').style.width = Math.min(100, d.percent) + '%';
-  document.getElementById('quotaDetail').textContent = `Terpakai ${d.percent}% • Sisa ${fmt(d.free)}`;
+  const bar = document.getElementById('quotaBar');
+  bar.style.width = Math.min(100, d.percent) + '%';
+  bar.classList.toggle('full', d.percent >= 100);
+  document.getElementById('quotaDetail').textContent = d.percent >= 100
+    ? `⛔ Penuh (${d.percent}%) — hapus file atau kosongkan sampah untuk menambah data`
+    : `Terpakai ${d.percent}% • Sisa ${fmt(d.free)}`;
 }
 
 let currentFolderId = null;
@@ -346,6 +364,8 @@ function dropToFolder(e, folderId) {
 }
 async function uploadToFolder(fileList, folderId) {
   if (!fileList.length) return;
+  const q0 = await fetch('/api/quota', { headers: authHeaders() }).then(r => r.json()).catch(() => null);
+  if (q0 && q0.free <= 0) { alert('⛔ Penyimpanan penuh (10 GB). Hapus file atau kosongkan sampah untuk menambah data.'); return; }
   const fd = new FormData();
   fd.append('folderId', folderId || 'root');
   for (const f of fileList) fd.append('files', f);
@@ -692,6 +712,8 @@ async function saveFileModal() {
   if (modalMode === 'create') {
     const name = document.getElementById('modalFileName').value.trim();
     if (!name) { status.textContent = 'Isi nama file dulu, contoh: catatan.txt'; return; }
+    const q0 = await fetch('/api/quota', { headers: authHeaders() }).then(r => r.json()).catch(() => null);
+    if (q0 && q0.free <= 0) { status.textContent = '⛔ Penyimpanan penuh (10 GB). Hapus file atau kosongkan sampah.'; return; }
     status.textContent = 'Menyimpan...';
     const r = await fetch('/api/create', {
       method: 'POST',
