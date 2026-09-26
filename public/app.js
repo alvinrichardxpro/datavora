@@ -362,18 +362,88 @@ function dropToFolder(e, folderId) {
   document.querySelectorAll('.folder-drop').forEach(x => x.classList.remove('folder-drop'));
   if (e.dataTransfer.files.length) uploadToFolder(e.dataTransfer.files, folderId);
 }
+const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB per potongan (lolos limit 100 MB Cloudflare)
+
 async function uploadToFolder(fileList, folderId) {
   if (!fileList.length) return;
   const q0 = await fetch('/api/quota', { headers: authHeaders() }).then(r => r.json()).catch(() => null);
   if (q0 && q0.free <= 0) { alert('⛔ Penyimpanan penuh (10 GB). Hapus file atau kosongkan sampah untuk menambah data.'); return; }
+  let okNames = [], fail = 0, quotaStop = false;
+  for (const f of fileList) {
+    try {
+      if (f.size > CHUNK_SIZE) {
+        showUpProgress(f.name, 0);
+        await uploadFileChunked(f, folderId);
+      } else {
+        const r = await uploadSingle(f, folderId);
+        if (r === 'quota') { quotaStop = true; break; }
+        if (!r) { fail++; continue; }
+      }
+      okNames.push(f.name);
+    } catch {
+      fail++;
+    }
+  }
+  hideUpProgress();
+  const m = (folderId && folderMap().get(folderId)) || null;
+  const where = m ? ` ke folder ${m.name}` : '';
+  if (quotaStop) alert('⛔ Penyimpanan penuh (10 GB). ' + okNames.length + ' file tersimpan' + where + '.');
+  else if (fail) alert(`${okNames.length} file tersimpan${where}, ${fail} gagal.`);
+  else alert(`${okNames.length} file berhasil diupload${where}.`);
+  loadQuota(); loadFiles();
+}
+
+async function uploadSingle(f, folderId) {
   const fd = new FormData();
   fd.append('folderId', folderId || 'root');
-  for (const f of fileList) fd.append('files', f);
+  fd.append('files', f);
   const r = await fetch('/api/upload', { method: 'POST', headers: authHeaders(), body: fd });
-  const d = await r.json();
-  const m = (folderId && folderMap().get(folderId)) || null;
-  alert((d.message || (r.ok ? 'Upload selesai' : 'Upload gagal')) + (m ? ` ke folder ${m.name}` : ''));
-  loadQuota(); loadFiles();
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    if (r.status === 400 && /penuh/.test(d.message || '')) return 'quota';
+    return false;
+  }
+  return (d.files || []).length > 0;
+}
+
+async function uploadFileChunked(f, folderId) {
+  const total = Math.ceil(f.size / CHUNK_SIZE);
+  const uploadId = Date.now() + '-' + Math.round(Math.random() * 1e9);
+  for (let i = 0; i < total; i++) {
+    const part = f.slice(i * CHUNK_SIZE, Math.min(f.size, (i + 1) * CHUNK_SIZE));
+    const fd = new FormData();
+    fd.append('uploadId', uploadId);
+    fd.append('index', String(i));
+    fd.append('total', String(total));
+    fd.append('chunk', part, 'part');
+    const r = await fetch('/api/upload-chunk', { method: 'POST', headers: authHeaders(), body: fd });
+    if (!r.ok) throw new Error('chunk gagal');
+    showUpProgress(f.name, Math.round(((i + 1) / total) * 90));
+  }
+  showUpProgress(f.name, 95);
+  const r = await fetch('/api/upload-complete', {
+    method: 'POST',
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uploadId, name: f.name, mimetype: f.type || 'application/octet-stream', size: f.size, total, folderId: folderId || 'root' })
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const e = new Error(d.message || 'gagal merangkai');
+    if (r.status === 400 && /penuh/.test(d.message || '')) e.quota = true;
+    throw e;
+  }
+  showUpProgress(f.name, 100);
+}
+
+function showUpProgress(name, pct) {
+  let el = document.getElementById('upProgress');
+  if (!el) return;
+  el.style.display = 'block';
+  el.innerHTML = `<div class="up-name">${escapeHtml(name)}</div><div class="up-bar"><div style="width:${pct}%"></div></div><div class="up-pct">${pct}%</div>`;
+}
+function hideUpProgress() {
+  const el = document.getElementById('upProgress');
+  if (el) el.style.display = 'none';
 }
 
 // Tombol ＋ : tambah file langsung ke folder tertentu tanpa harus membukanya dulu
@@ -385,14 +455,9 @@ function quickAddFiles(folderId) {
 async function uploadQuickFiles() {
   const input = document.getElementById('quickFileInput');
   if (!input.files.length) return;
-  const fd = new FormData();
-  fd.append('folderId', quickTarget || 'root');
-  for (const f of input.files) fd.append('files', f);
+  const files = [...input.files];
   input.value = '';
-  const r = await fetch('/api/upload', { method: 'POST', headers: authHeaders(), body: fd });
-  const d = await r.json();
-  alert(d.message || (r.ok ? 'Upload selesai' : 'Upload gagal'));
-  loadQuota(); loadFiles();
+  uploadToFolder(files, quickTarget);
 }
 
 // Menu ⋮ : buka/tutup, klik di luar menutup semua
@@ -432,13 +497,25 @@ async function fileBlobURL(id) {
   return url;
 }
 
-async function loadThumbs(files) {
-  for (const f of files) {
-    if (!(f.mimetype || '').startsWith('image/')) continue;
-    const url = await fileBlobURL(f.id);
-    if (!url) continue;
-    document.querySelectorAll(`img[data-thumb="${f.id}"]`).forEach(img => { img.src = url; });
+let thumbObserver = null;
+async function loadThumbs() {
+  // Thumbnail malas: hanya unduh gambar yang terlihat di layar (hemat & cepat)
+  if (thumbObserver) thumbObserver.disconnect();
+  const loadOne = (img) => {
+    fileBlobURL(img.dataset.thumb).then(url => { if (url) img.src = url; });
+  };
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('img[data-thumb]').forEach(loadOne);
+    return;
   }
+  thumbObserver = new IntersectionObserver(entries => {
+    for (const en of entries) {
+      if (!en.isIntersecting) continue;
+      thumbObserver.unobserve(en.target);
+      loadOne(en.target);
+    }
+  }, { rootMargin: '300px' });
+  document.querySelectorAll('img[data-thumb]').forEach(img => thumbObserver.observe(img));
 }
 
 let previewFileId = null;
@@ -501,7 +578,7 @@ async function loadFiles() {
   if (!files.length) { box.innerHTML = '<div class="empty">Folder ini kosong. Upload file atau buat file baru di atas ⬆</div>'; renderPinned(); updateSelBar(); toggleDelAll(false); return; }
   box.innerHTML = files.map(f => {
     const thumb = (f.mimetype || '').startsWith('image/')
-      ? `<img class="thumb" data-thumb="${f.id}" onclick="previewFile('${f.id}')" title="Klik untuk melihat foto">` : '';
+      ? `<img class="thumb" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" data-thumb="${f.id}" onclick="previewFile('${f.id}')" title="Klik untuk melihat foto" loading="lazy">` : '';
     return `
     <div class="file-item">
       <input type="checkbox" class="pick" data-fid="${f.id}" title="Centang, atau seret area kosong untuk memilih banyak" ${selected.has(f.id) ? 'checked' : ''} onchange="toggleSelect('${f.id}', this.checked)">
@@ -528,7 +605,7 @@ async function loadFiles() {
   renderPinned();
   updateSelBar();
   toggleDelAll(files.length > 0);
-  loadThumbs(files);
+  loadThumbs();
 }
 
 function toggleDelAll(show) {

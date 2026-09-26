@@ -8,6 +8,8 @@ Fitur:
 - ✅ Tutup tab/browser = otomatis logout + logout otomatis setelah 15 menit idle
 - ✅ Kuota awal **10 GB per user** + bar progres sisa penyimpanan
 - ✅ Upload file apapun (maks 20 file sekaligus, drag & drop)
+- ✅ **File >100 MB bisa diupload**: otomatis dicacah 10 MB/potongan (lolos limit
+  Cloudflare) + indikator progres. Kecepatan mengikuti upload internet rumah.
 - ✅ **Folder bersarang** (mis. Foto > Liburan) + pindahkan file antar folder + hapus folder rekursif
 - ✅ **Thumbnail & pratinjau** foto/video/audio/PDF langsung di website (klik thumbnail atau Lihat 👁)
 - ✅ **Buat file teks langsung dari website** (catatan .txt/.md/.html/dll) + buka & edit isinya

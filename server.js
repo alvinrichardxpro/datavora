@@ -137,6 +137,116 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// ---- Upload file besar: dicacah per potongan agar lolos limit 100 MB Cloudflare ----
+// Klien memecah file (disarankan 10 MB/potongan), mengunggah satu per satu,
+// lalu /api/upload-complete merangkai + mengenkripsi. Field teks WAJIB di-append
+// SEBELUM file 'chunk' di FormData.
+const CHUNK_DIR = path.join(UPLOAD_DIR, '.chunks');
+const safeId = (s) => (typeof s === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(s) ? s : null);
+const chunkStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    try {
+      const payload = jwt.verify((req.headers.authorization || '').replace('Bearer ', ''), JWT_SECRET);
+      const uidv = safeId(req.body.uploadId);
+      if (!uidv) return cb(new Error('uploadId tidak valid'));
+      const dir = path.join(CHUNK_DIR, payload.username, uidv);
+      fs.mkdirSync(dir, { recursive: true });
+      cb(null, dir);
+    } catch {
+      cb(new Error('Unauthorized'));
+    }
+  },
+  filename: (req, file, cb) => {
+    const i = parseInt(req.body.index, 10);
+    if (!Number.isInteger(i) || i < 0 || i > 10000) return cb(new Error('index tidak valid'));
+    cb(null, String(i).padStart(6, '0') + '.part');
+  }
+});
+const chunkUpload = multer({ storage: chunkStorage });
+
+app.post('/api/upload-chunk', authMiddleware, chunkUpload.single('chunk'), (req, res) => {
+  res.json({ message: 'Potongan diterima', index: Number(req.body.index) });
+});
+
+function cleanStaleChunks() {
+  try {
+    if (!fs.existsSync(CHUNK_DIR)) return;
+    const now = Date.now();
+    for (const u of fs.readdirSync(CHUNK_DIR)) {
+      const ud = path.join(CHUNK_DIR, u);
+      if (!fs.statSync(ud).isDirectory()) continue;
+      for (const id of fs.readdirSync(ud)) {
+        const d = path.join(ud, id);
+        if (now - fs.statSync(d).mtimeMs > 24 * 3600 * 1000) fs.rmSync(d, { recursive: true, force: true });
+      }
+    }
+  } catch { /* abaikan */ }
+}
+
+app.post('/api/upload-complete', authMiddleware, async (req, res) => {
+  const { uploadId, name, mimetype, size, total, folderId } = req.body || {};
+  const uidv = safeId(uploadId);
+  if (!uidv || !name || typeof name !== 'string' || !Number.isInteger(total) || total < 1 || total > 10000 || !Number.isInteger(size) || size < 0)
+    return res.status(400).json({ message: 'Data penyelesaian tidak lengkap' });
+  cleanStaleChunks();
+  const dir = path.join(CHUNK_DIR, req.user.username, uidv);
+
+  let targetFolder = null;
+  if (folderId && folderId !== 'root') {
+    const folders = readJson(FOLDERS_FILE, []);
+    if (!folders.find(f => f.id === folderId && f.owner === req.user.username))
+      return res.status(400).json({ message: 'Folder tujuan tidak ditemukan' });
+    targetFolder = folderId;
+  }
+
+  const users = readJson(USERS_FILE, []);
+  const user = users.find(u => u.username === req.user.username);
+  const quota = user ? user.quota : QUOTA_BYTES;
+  if (getUserUsage(req.user.username) + size > quota) {
+    fs.rmSync(dir, { recursive: true, force: true });
+    return res.status(400).json({ message: '⛔ Penyimpanan penuh (10 GB). Hapus file atau kosongkan sampah untuk menambah data.' });
+  }
+
+  try {
+    let actual = 0;
+    for (let i = 0; i < total; i++) {
+      const p = path.join(dir, String(i).padStart(6, '0') + '.part');
+      if (!fs.existsSync(p)) return res.status(400).json({ message: `Potongan ke-${i} hilang, ulangi upload` });
+      actual += fs.statSync(p).size;
+    }
+    if (actual !== size) return res.status(400).json({ message: 'Ukuran tidak cocok, ulangi upload' });
+
+    const safeName = String(name).replace(/[/\\?%*:|"<>]/g, '_').slice(0, 100) || 'file';
+    const tmp = path.join(dir, '_combined.tmp');
+    fs.writeFileSync(tmp, Buffer.alloc(0));
+    for (let i = 0; i < total; i++)
+      fs.appendFileSync(tmp, fs.readFileSync(path.join(dir, String(i).padStart(6, '0') + '.part')));
+
+    const encPath = path.join(userFolder(req.user.username), Date.now() + '-' + Math.round(Math.random() * 1e9) + '-' + safeName + '.enc');
+    const { iv, tag } = await encryptFileToDisk(tmp, encPath);
+    fs.rmSync(dir, { recursive: true, force: true });
+
+    const meta = {
+      id: Date.now() + '-' + Math.round(Math.random() * 1e9),
+      owner: req.user.username,
+      originalName: safeName,
+      storedName: path.basename(encPath),
+      size,
+      mimetype: (typeof mimetype === 'string' && mimetype) || 'application/octet-stream',
+      folderId: targetFolder,
+      encrypted: true,
+      iv, tag,
+      uploadedAt: new Date().toISOString()
+    };
+    const allFiles = readJson(FILES_FILE, []);
+    allFiles.push(meta);
+    writeJson(FILES_FILE, allFiles);
+    res.json({ message: 'File besar berhasil diupload (tersimpan terenkripsi)', file: meta });
+  } catch {
+    res.status(500).json({ message: 'Gagal merangkai file, coba lagi' });
+  }
+});
+
 // ---- API: Register ----
 app.post('/api/register', async (req, res) => {
   const { username, password } = req.body || {};
@@ -661,6 +771,13 @@ app.get('/api/download-all', authMiddleware, (req, res) => {
     else archive.append(fs.createReadStream(fullPath), { name });
   }
   archive.finalize();
+});
+
+// Error upload (multer/dll) dikembalikan sebagai JSON, bukan halaman HTML
+app.use((err, req, res, next) => {
+  if (!err) return next();
+  if (req.path.startsWith('/api/')) return res.status(400).json({ message: err.message || 'Upload gagal' });
+  next(err);
 });
 
 app.listen(PORT, () => {
