@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://GANTI-DENGAN-HOST-BACKEND/api/:path*"
+      "destination": "https://maritime-whereas-presents-remedies.trycloudflare.com/api/:path*"
     }
   ]
 }
